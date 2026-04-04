@@ -4,7 +4,7 @@ import { Navbar } from './components/Navbar';
 import { ProductCard } from './components/ProductCard';
 import AdminDashboard from './components/AdminDashboard';
 import { Product } from './types';
-import { supabase } from './lib/supabaseClient';
+import { isSupabaseConfigured, supabase } from './lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const HomePage: React.FC = () => {
@@ -13,6 +13,10 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
@@ -75,7 +79,7 @@ const HomePage: React.FC = () => {
       {products.length === 0 && (
         <div className="text-center py-32">
           <p className="text-xl font-medium text-gray-400">
-            No products available yet.
+            {isSupabaseConfigured ? 'No products available yet.' : 'Supabase is not configured for this deployment.'}
           </p>
         </div>
       )}

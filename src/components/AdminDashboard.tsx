@@ -29,6 +29,11 @@ const AdminDashboard: React.FC = () => {
 
 
   const fetchProducts = useCallback(async () => {
+    if (!supabase) {
+      setError('Supabase is not configured. Admin dashboard is unavailable.');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase
       .from('products')
@@ -47,6 +52,10 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    if (!supabase) {
+      setError('Supabase is not configured.');
+      return;
+    }
     if (isEditing) {
       const { error } = await supabase
         .from('products')
@@ -90,6 +99,10 @@ const AdminDashboard: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     setError("");
     setSuccess("");
+    if (!supabase) {
+      setError('Supabase is not configured.');
+      return;
+    }
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (!error) {
       setProducts(products.filter((p: Product) => p.id !== id));
@@ -112,6 +125,12 @@ const AdminDashboard: React.FC = () => {
 
 
   useEffect(() => {
+    if (!supabase) {
+      setShowLogin(true);
+      setError('Supabase is not configured. Admin login is disabled.');
+      return;
+    }
+
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && session.user) {
         setUser(session.user);
@@ -142,7 +161,14 @@ const AdminDashboard: React.FC = () => {
   const handleLogin = async () => {
     setError("");
     setSuccess("");
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    if (!supabase) {
+      setError('Supabase is not configured. Admin login is disabled.');
+      return;
+    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/admin` },
+    });
     if (error) setError(error.message);
   };
 
@@ -151,7 +177,9 @@ const AdminDashboard: React.FC = () => {
 
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     setShowLogin(true);
     setUser(null);
     setSuccess("");

@@ -12,6 +12,11 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    if (!supabase) {
+      setError('Supabase is not configured. Admin login is disabled.');
+      return;
+    }
+
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser({ email: session.user.email ?? '' });
@@ -31,12 +36,24 @@ export const Navbar: React.FC = () => {
   }, []);
 
   const handleLogin = async () => {
+    if (!supabase) {
+      setError('Supabase is not configured. Admin login is disabled.');
+      return;
+    }
     setError(null);
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/admin` },
+    });
     if (error) setError(error.message);
   };
 
   const handleLogout = async () => {
+    if (!supabase) {
+      setUser(null);
+      navigate('/');
+      return;
+    }
     await supabase.auth.signOut();
     setUser(null);
     navigate('/');
