@@ -43,7 +43,7 @@ const AdminDashboard: React.FC = () => {
   }, [fetchProducts]);
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -83,7 +83,7 @@ const AdminDashboard: React.FC = () => {
         setError(error.message || 'Unknown error while adding product');
       }
     }
-  };
+  }
 
 
   const handleDelete = async (id: string) => {
